@@ -91,3 +91,20 @@ ax.plot(signal_slice)
 
 for peak in r_peaks:
     ax.axvline(x=peak, color='r')
+
+# calculate HR
+RR_int = np.diff(r_peaks) / len(single_beat);
+heart_rate = 60 / RR_int;
+
+HR_max = 200;
+HR_min = 40;
+
+heart_rate = np.where((heart_rate < HR_max) & (heart_rate > HR_min), heart_rate, heart_rate);
+
+fig, ax = plt.subplots()
+ax.plot(heart_rate)    
+
+# HR - Summary Stats
+df = pd.DataFrame(heart_rate, columns=["Heart Rate"], dtype = float);
+df.describe();
+
