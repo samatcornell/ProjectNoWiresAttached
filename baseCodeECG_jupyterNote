@@ -1,15 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Jan 17 11:50:30 2021
-
-@author: mary-jo.ajiduah
-"""
-
 import h5py # 4 loading data
 
 import numpy as np # 4 C arrays
-import pandas as pd # 4 dataframe object
+import pandas as pd # 4 dataframe obj
 
 import matplotlib.pyplot as plt # 4 plotting graphs
 import seaborn as sns # 4 pretty graphs
@@ -18,23 +10,22 @@ import scipy.signal as signal # 4 signal processing
 import peakutils # 4 peak finding
 import pywt # 4 wavelet transforms
 
-import wfdb # for physionet tools
+import wfdb # 4 physionet tools
 
 # load the data
 
-h5file = h5py.File("/Users/mary-jo.ajiduah/Desktop/HeartthrobsSignal/data/tracings.hdf5", 'r');
-dataset = h5file['tracings'];
-x = np.array(h5file['tracings']);
-# ecg = np.zeros((x.shape[0],1), dtype='d');
-# x.read_direct(ecg_)
-ecg = x[0, 581:3515, 2]; # sample used for this code, taken from third lead
-
+h5file = h5py.File("/Users/mary-jo.ajiduah/Desktop/HeartthrobsSignal/data/tracings.hdf5", 'r')
+dataset = h5file['tracings']
+x = np.array(h5file['tracings'])
+ecg = x[0, 581:3515, 2] # sample used for this code, taken from third lead
 
 # plot the data
+
 fig, ax = plt.subplots()
 ax.plot(ecg)
 
 # preprocessing 
+
 data = ecg[0:2000]
 
 fig, ax = plt.subplots(3, sharex = True)
@@ -44,9 +35,47 @@ fig, ax = plt.subplots(3, sharex = True)
 lowpass = 100;
 highpass = 0.01;
 
-a, b = signal.butter(6, (highpass, lowpass), btype='bandpass', analog = True);
-filtered_sig = signal.lfilter(b, a, ecg);
-smoothed_sig = signal.cspline1d(filtered_sig, lamb=1000);
+a, b = signal.butter(6, (highpass, lowpass), btype='bandpass', analog = True)
+filtered_sig = signal.lfilter(b, a, ecg)
+smoothed_sig = signal.cspline1d(filtered_sig, lamb=1000)
+
+ax[0].plot(ecg)
+ax[1].plot(filtered_sig)
+ax[2].plot(smoothed_sig)
+
+# preprocessing 
+
+data = ecg[0:2000]
+
+fig, ax = plt.subplots(3, sharex = True)
+
+# Bessel filter 
+
+lowpass = 100;
+highpass = 0.01;
+
+a, b = signal.bessel(6, (highpass, lowpass), btype='bandpass', analog = True)
+filtered_sig = signal.lfilter(b, a, ecg)
+smoothed_sig = signal.cspline1d(filtered_sig, lamb=1000)
+
+ax[0].plot(ecg)
+ax[1].plot(filtered_sig)
+ax[2].plot(smoothed_sig)
+
+# preprocessing 
+
+data = ecg[0:2000]
+
+fig, ax = plt.subplots(3, sharex = True)
+
+# Chebyshev type I digital filter 
+
+lowpass = 100;
+highpass = 0.9;
+
+a, b = signal.cheby1(6, 0.1, (highpass, lowpass), btype='bandpass', analog = True)
+filtered_sig = signal.lfilter(b, a, ecg)
+smoothed_sig = signal.cspline1d(filtered_sig, lamb=1000)
 
 ax[0].plot(ecg)
 ax[1].plot(filtered_sig)
@@ -54,7 +83,7 @@ ax[2].plot(smoothed_sig)
 
 # detrend & filter wavelets
 single_beat = ecg[0:457]; # data needed for a single heartbeat
-wavelets = pywt.wavedec(single_beat, 'db4', level = 5);
+wavelets = pywt.wavedec(single_beat, 'db4', level = 5)
 
 fig, ax = plt.subplots(len(wavelets)+1)
 
@@ -91,7 +120,7 @@ ax.plot(signal_slice)
 
 for peak in r_peaks:
     ax.axvline(x=peak, color='r')
-
+    
 # calculate HR
 RR_int = np.diff(r_peaks) / len(single_beat);
 heart_rate = 60 / RR_int;
@@ -105,6 +134,5 @@ fig, ax = plt.subplots()
 ax.plot(heart_rate)    
 
 # HR - Summary Stats
-df = pd.DataFrame(heart_rate, columns=["Heart Rate"], dtype = float);
-df.describe();
-
+df = pd.DataFrame(heart_rate, columns=["Heart Rate"], dtype = float)
+df.describe()
